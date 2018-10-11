@@ -34,11 +34,27 @@ module.exports = {
         lastName,
         commonName,
         userName,
-        pass,
-        email,
+        password,
+        mail,
         title,
         phone,
-        location
+        location,
+        /* CUSTOM */
+        pager: pager, /* Transponder Key */
+        mobile: mobile, /* Mobilephone */
+        jobTitle: jobTitle, /* Job Title */
+        department: department, /* Department */
+        company: company, /* Company */
+        street: street, /* Street */
+        city: city, /* City */
+        extensionAttribute1: extensionAttribute1, /* KSL */
+        extensionAttribute2: extensionAttribute2, /* KSL */
+        extensionAttribute3: extensionAttribute3, /* Medizinischer Title */
+        extensionAttribute4: extensionAttribute4, /* Kostenstelle */
+        extensionAttribute6: extensionAttribute6, /* Geschlecht (Herr, Frau) */
+        extensionAttribute9: extensionAttribute9, /* Personalnummer */
+        extensionAttribute10: extensionAttribute10, /* Facharzt jobTitle */
+        extensionAttribute11: extensionAttribute11 /* i.A. */
       } = opts;
 
       let { passwordExpires, enabled } = opts;
@@ -58,8 +74,8 @@ module.exports = {
       location = parseLocation(location);
 
       let valid =
-        email && String(email).indexOf('@') === -1
-          ? 'Invalid email address.'
+        mail && String(mail).indexOf('@') === -1
+          ? 'Invalid mail address.'
           : !commonName
             ? 'A commonName is required.'
             : !userName ? 'A userName is required.' : true;
@@ -73,54 +89,148 @@ module.exports = {
         cn: commonName,
         givenName: firstName,
         sn: lastName,
-        mail: email,
+        mail: mail,
         uid: userName,
         title: title,
         telephone: phone,
         userPrincipalName: `${userName}@${this.config.domain}`,
         sAMAccountName: userName,
         objectClass: this.config.defaults.userObjectClass,
-        userPassword: ssha.create(pass)
+        userPassword: password,
+        /* CUSTOM */
+        pager: pager, /* Transponder Key */
+        mobile: mobile, /* Mobilephone */
+        jobTitle: jobTitle, /* Job Title */
+        department: department, /* Department */
+        company: company, /* Company */
+        street: street, /* Street */
+        city: city, /* City */
+        extensionAttribute1: extensionAttribute1, /* KSL */
+        extensionAttribute2: extensionAttribute2, /* KSL */
+        extensionAttribute3: extensionAttribute3, /* Medizinischer Title */
+        extensionAttribute4: extensionAttribute4, /* Kostenstelle */
+        extensionAttribute6: extensionAttribute6, /* Geschlecht (Herr, Frau) */
+        extensionAttribute9: extensionAttribute9, /* Personalnummer */
+        extensionAttribute10: extensionAttribute10, /* Facharzt jobTitle */
+        extensionAttribute11: extensionAttribute11 /* i.A. */
       };
 
-      this._addObject(`CN=${commonName}`, location, userObject)
-        .then(res => {
-          delete this._cache.users[userName];
-          this._cache.all = {};
-          return this.setUserPassword(userName, pass);
-        })
-        .then(data => {
-          let expirationMethod =
-            passwordExpires === false
-              ? 'setUserPasswordNeverExpires'
-              : 'enableUser';
-          return this[expirationMethod](userName);
-        })
-        .then(data => {
-          let enableMethod = enabled === false ? 'disableUser' : 'enableUser';
-          return this[enableMethod](userName);
-        })
-        .then(data => {
-          delete userObject.userPassword;
-          return resolve(userObject);
-        })
-        .catch(err => {
-          /* istanbul ignore next */
-          const ENTRY_EXISTS = String(err.message).indexOf('ENTRY_EXISTS') > -1;
-          /* istanbul ignore next */
+      var baseDN = '';
+      var newBaseDN = '';
+      var baseOU = '';
+      var newBaseOU = '';
+
+      baseOU = parseLocation(location).split(',');
+
+      baseDN = this.config.baseDN.split(',');
+
+      baseDN = baseDN.filter(dn => {
+        if(dn.startsWith('OU=')) {
+          return false;
+        }
+        return true;
+      });
+
+      baseOU = baseOU.filter(ou => {
+        if(ou.startsWith('OU=OU=')) {
+          return false;
+        }
+        if(ou.startsWith('OU=,')) {
+          return false;
+        }
+        if(ou === 'OU=') {
+          return false;
+        }
+        if(ou === '' || ou === null || ou === undefined) {
+          return false;
+        }
+        return true;
+      });
+
+      for(dn in baseDN) {
+        newBaseDN += ',' + baseDN[dn];
+      }
+
+      for(ou in baseOU) {
+        newBaseOU += ',' + baseOU[ou];
+      }
+
+      newBaseDN = newBaseDN.substring(1);
+      newBaseOU = newBaseOU.substring(1);
+
+      var outDN = newBaseOU + ',' + newBaseDN;
+
+      console.log(outDN);
+
+      this.ad.addUser(outDN, this.config.user, this.config.pass, userObject, (err, response) => {
+        if(err) {
+          const ENTRY_EXISTS = String(err).indexOf('ENTRY_EXISTS') > -1;
           if (ENTRY_EXISTS) {
-            /* istanbul ignore next */
             return reject({
               message: `User ${userName} already exists.`,
               httpStatus: 400
             });
           }
-          /* istanbul ignore next */
           return reject({
-            message: `Error creating user: ${err.message}`,
-            httpStatus: 503
+            message: err,
+            httpStatus: 500
           });
-        });
+        }
+
+        return resolve(userObject);
+      });
+
+      // this._addObject(`CN=${commonName}`, location, userObject)
+      //   .then(res => {
+      //     console.log('res');
+      //     console.log(res);
+      //     delete this._cache.users[userName];
+      //     this._cache.all = {};
+      //     return this.setUserPassword(userName, password);
+      //   })
+      //   .then(data => {
+      //     console.log('data1');
+      //     console.log(data);
+      //     let expirationMethod =
+      //       passwordExpires === false
+      //         ? 'setUserPasswordNeverExpires'
+      //         : 'enableUser';
+      //     if (passwordExpires !== undefined) {
+      //       return this[expirationMethod](userName);
+      //     }
+      //   })
+      //   .then(data => {
+      //     console.log('data2');
+      //     console.log(data);
+      //     let enableMethod = enabled === false ? 'disableUser' : 'enableUser';
+      //     if (enabled !== undefined) {
+      //       return this[enableMethod](userName);
+      //     }
+      //   })
+      //   .then(data => {
+      //     console.log('data3');
+      //     console.log(data);
+      //     delete userObject.userPassword;
+      //     return resolve(userObject);
+      //   })
+      //   .catch(err => {
+      //     /* istanbul ignore next */
+      //     console.log(err);
+      //     const ENTRY_EXISTS = String(err.message).indexOf('ENTRY_EXISTS') > -1;
+      //     /* istanbul ignore next */
+      //     if (ENTRY_EXISTS) {
+      //       /* istanbul ignore next */
+      //       return reject({
+      //         message: `User ${userName} already exists.`,
+      //         httpStatus: 400
+      //       });
+      //     }
+      //     /* istanbul ignore next */
+      //     return reject({
+      //       message: `Error creating user: ${err.message}`,
+      //       httpStatus: 503
+      //     });
+      //   });
     });
   },
 
@@ -132,10 +242,26 @@ module.exports = {
         lastName: 'sn',
         password: 'unicodePwd',
         commonName: 'cn',
-        email: 'mail',
+        mail: 'mail',
         title: 'title',
         objectClass: 'objectClass',
-        userName: 'sAMAccountName'
+        userName: 'sAMAccountName',
+        // /* CUSTOM */
+        // accountExpires: 'accountExpires',
+        // pager: 'pager',
+        // jobTitle: 'jobTitle',
+        // department: 'department',
+        // company: 'company',
+        // street: 'street',
+        // city: 'city',
+        // extensionAttribute1: 'extensionAttribute1',
+        // extensionAttribute2: 'extensionAttribute2',
+        // extensionAttribute3: 'extensionAttribute3',
+        // extensionAttribute4: 'extensionAttribute4',
+        // extensionAttribute6: 'extensionAttribute6',
+        // extensionAttribute9: 'extensionAttribute9',
+        // extensionAttribute10: 'extensionAttribute10',
+        // extensionAttribute11: 'extensionAttribute11'
       };
 
       let later = [];
@@ -234,6 +360,16 @@ module.exports = {
         includeMembership: ['all'],
         includeDeleted: false
       };
+      if (opts) {
+        if (opts.fields && opts.fields.length) {
+          if (opts.fields === 'all' || opts.fields.includes('all')) {
+            params.attributes = ['*'];
+            delete opts.fields;
+          } else {
+            params.attributes = ['dn'].concat(opts.fields);
+          }
+        }
+      }
       this.ad.find(params, (err, results) => {
         if (err) {
           /* istanbul ignore next */
@@ -288,9 +424,11 @@ module.exports = {
     const domain = this.config.domain;
     let fullUser = `${userName}@${domain}`;
     return new Promise(async (resolve, reject) => {
+      //console.log('AUTH USER', fullUser, pass);
       this.ad.authenticate(fullUser, pass, (error, authorized) => {
         let code;
         let out = authorized;
+        //console.log('BACK FROM AUTH', error, authorized);
         if (error && error.lde_message) {
           out.detail = error.lde_message;
           out.message = String(error.stack).split(':')[0];
