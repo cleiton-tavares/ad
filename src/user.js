@@ -247,21 +247,21 @@ module.exports = {
         objectClass: 'objectClass',
         userName: 'sAMAccountName',
         // /* CUSTOM */
-        // accountExpires: 'accountExpires',
-        // pager: 'pager',
-        // jobTitle: 'jobTitle',
-        // department: 'department',
-        // company: 'company',
-        // street: 'street',
-        // city: 'city',
-        // extensionAttribute1: 'extensionAttribute1',
-        // extensionAttribute2: 'extensionAttribute2',
-        // extensionAttribute3: 'extensionAttribute3',
-        // extensionAttribute4: 'extensionAttribute4',
-        // extensionAttribute6: 'extensionAttribute6',
-        // extensionAttribute9: 'extensionAttribute9',
-        // extensionAttribute10: 'extensionAttribute10',
-        // extensionAttribute11: 'extensionAttribute11'
+        accountExpires: 'accountExpires',
+        pager: 'pager',
+        jobTitle: 'jobTitle',
+        department: 'department',
+        company: 'company',
+        street: 'street',
+        city: 'city',
+        extensionAttribute1: 'extensionAttribute1',
+        extensionAttribute2: 'extensionAttribute2',
+        extensionAttribute3: 'extensionAttribute3',
+        extensionAttribute4: 'extensionAttribute4',
+        extensionAttribute6: 'extensionAttribute6',
+        extensionAttribute9: 'extensionAttribute9',
+        extensionAttribute10: 'extensionAttribute10',
+        extensionAttribute11: 'extensionAttribute11'
       };
 
       let later = [];
