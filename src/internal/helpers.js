@@ -30,6 +30,25 @@ module.exports = {
 	        });
 		});
 	},
+	
+	async _findAllUsers(opts) {
+	    return new Promise(async (resolve, reject) => {
+	      const config = {
+		query: `CN=*`,
+	      };
+	      this.ad.findUsers('CN=*', (err, results) => {
+		if(err) {
+		  return reject(err);
+		}
+
+		if(!results || results.length < 1) {
+		  return resolve([]);
+		}
+
+		resolve(api.processResults(opts, results));
+	      });
+	    });
+	  },
 
 	async _findByType(opts, membership) {
 		opts = opts || {};
