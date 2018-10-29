@@ -132,9 +132,9 @@ module.exports = {
       });
 
       baseOU = baseOU.filter(ou => {
-        if(ou.startsWith('OU=OU=')) {
+        /*if(ou.startsWith('OU=OU=')) {
           return false;
-        }
+        }*/
         if(ou.startsWith('OU=,')) {
           return false;
         }
@@ -160,7 +160,7 @@ module.exports = {
 
       var outDN = newBaseOU + ',' + newBaseDN;
 
-      console.log(outDN);
+      outDN = outDN.replace(/^.{3}/g, '');
 
       this.ad.addUser(outDN, this.config.user, this.config.pass, userObject, (err, response) => {
         if(err) {
