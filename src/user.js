@@ -344,6 +344,37 @@ module.exports = {
         });
     });
   },
+  
+  async findGroupsByUser(userName, opts) {
+    userName = String(userName || '');
+    return new Promise(async (resolve, reject) => {
+      const domain = this.config.domain;
+      userName = userName.indexOf('@') > -1 ? userName.split('@')[0] : userName;
+      const filter = `(|(userPrincipalName=${userName}@${domain})(sAMAccountName=${userName}))`;
+      const params = {
+        filter,
+        includeMembership: ['all'],
+        includeDeleted: false
+      };
+      if (opts) {
+        if (opts.fields && opts.fields.length) {
+          if (opts.fields === 'all' || opts.fields.includes('all')) {
+            params.attributes = ['*'];
+            delete opts.fields;
+          } else {
+            params.attributes = ['dn'].concat(opts.fields);
+          }
+        }
+      }
+      this.ad.findGroupsByUser(params, (err, results) => {
+        if (err) {
+          /* istanbul ignore next */
+          return reject(err);
+        }
+        return resolve(results);
+      });
+    });
+  },  
 
   async findUser(userName, opts) {
     userName = String(userName || '');
