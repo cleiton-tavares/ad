@@ -56,6 +56,9 @@ module.exports = {
       get: opts => {
         return this.findUser(userName, opts);
       },
+      getUserGroups: opts => {
+        return this.findGroupsByUser(userName, opts);
+      },
       update: opts => {
         return this.updateUser(userName, opts);
       },
