@@ -25,18 +25,19 @@ module.exports = {
 			    }
 			});
 
-	        client.bind(this.config.user, this.config.pass, function(err, data) {  
+	        client.bind(this.config.user, this.config.pass, function(err, data) {
 	        	resolve([err, client]);
 	        });
 		});
 	},
-	
+
 	async _findAllUsers(opts) {
 	    return new Promise(async (resolve, reject) => {
-	      const config = {
-		query: `CN=*`,
+	      const opts = {
+          filter: `CN=*`,
+          sizeLimit: 0
 	      };
-	      this.ad.findUsers('CN=*', (err, results) => {
+	      this.ad.findUsers(opts, (err, results) => {
 		if(err) {
 		  return reject(err);
 		}
@@ -224,7 +225,7 @@ module.exports = {
 				    	return reject({message: err.message});
 				    }
 				    return resolve({success: true});
-				});	
+				});
 			} catch(e) {
 				return reject({message: e.message});
 			}
