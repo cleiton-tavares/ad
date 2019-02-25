@@ -33,11 +33,10 @@ module.exports = {
 
 	async _findAllUsers(opts) {
 	    return new Promise(async (resolve, reject) => {
-	      const opts = {
-          filter: `CN=*`,
-          sizeLimit: 0
+	      const config = {
+          filter: `CN=*`
 	      };
-	      this.ad.findUsers(opts, (err, results) => {
+	      this.ad.findUsers('CN=*', (err, results) => {
 		if(err) {
 		  return reject(err);
 		}
