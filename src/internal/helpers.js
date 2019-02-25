@@ -34,7 +34,7 @@ module.exports = {
 	async _findAllUsers(opts) {
 	    return new Promise(async (resolve, reject) => {
 	      const config = {
-          filter: `CN=*`
+		        query: `CN=*`,
 	      };
 	      this.ad.findUsers('CN=*', (err, results) => {
 		if(err) {
